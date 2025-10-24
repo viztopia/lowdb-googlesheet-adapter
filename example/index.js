@@ -5,7 +5,13 @@ import GoogleSheetAdapter from './GoogleSheetAdapter.js'; // Adjust path if need
 // 1. SET UP YOUR ADAPTER
 const WEB_APP_URL = "PASTE_YOUR_DEPLOYED_WEB_APP_URL_HERE";
 const defaultData = { messages: [] };
+
+// Use the default 'Sheet1' sheet
 const adapter = new GoogleSheetAdapter(WEB_APP_URL, defaultData);
+
+// Or, specify a custom sheet name
+// const adapter = new GoogleSheetAdapter(WEB_APP_URL, defaultData, 'my_lowdb_sheet');
+
 const db = new Low(adapter, defaultData);
 
 // 2. READ THE DATABASE ON STARTUP

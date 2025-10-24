@@ -19,7 +19,7 @@ This adapter treats a single cell in your Google Sheet (e.g., `A1`) as if it wer
 ## Files in this Repo
 
   * **`lowdb_adapter.gs`**: The **backend** code. You will paste this into your Google Apps Script project.
-  * **`GoogleSheetAdapter.js`**: The **client/server** code. You import this class into your Node.js or browser-based project.
+  * **`GoogleSheetAdapter.js`**: The **server** code. You import this class into your Node.js (or browser-based) project.
   * **`/example/index.js`**: A complete, working Node.js Express server example showing how to use the adapter.
   * **`/example/public`**: The frontend code for the example server, demonstrating how to interact with the database via HTTP requests.
 
@@ -35,14 +35,15 @@ This part creates the secure web API that your adapter will talk to.
 
 1.  **Create the Sheet:**
 
-      * Go to [sheets.new](https://sheets.new) to create a new Google Sheet. (You may want to use a dummy Google account instead of your main account for security).
-      * At the bottom, rename the default "Sheet1" tab to **`lowdb_storage`**. (If you want to use a different name, you must change the `SHEET_NAME` variable in the `lowdb_adapter.gs` script).
+      * Go to [sheets.new](https://sheets.new) to create a new Google Spreadsheet file. (You may want to use a dummy Google account instead of your main account for security).
+
 
 2.  **Create the Apps Script:**
 
       * In your new spreadsheet, click **Extensions** \> **Apps Script**.
       * Delete any placeholder code in the `Code.gs` file.
-      * Copy the entire contents of **`lowdb_adapter.gs`** from this repository and paste it into the script editor.
+      * Copy the entire contents of **`lowdb_adapter.gs`** from this repository and paste it into the script editor.       
+      * Note that by default, the script will use `Sheet1` to save your database. You can also specify a custom sheet name on the server code (see Usage Example below).
 
 3.  **Deploy the Script:**
 
@@ -61,6 +62,7 @@ This part creates the secure web API that your adapter will talk to.
       * Click **"Advanced"**, then **"Go to [Your Script Name] (unsafe)"**.
       * Click **"Allow"** to grant the script permission to edit your sheet.
       * Once deployed, you will be given a **Web app URL**. **Copy this URL.** This is your database API key.
+      * Note that it may a few seconds for the deployment to be active. If you run into errors like 'Error: Failed to read from Google Sheet: Forbidden', wait a moment and try again, or re-deploy the script.
 
 ### Part 2: Your Node.js Project (The "Client")
 
@@ -96,7 +98,13 @@ import GoogleSheetAdapter from './GoogleSheetAdapter.js'; // Adjust path if need
 // 1. SET UP YOUR ADAPTER
 const WEB_APP_URL = "PASTE_YOUR_DEPLOYED_WEB_APP_URL_HERE";
 const defaultData = { messages: [] };
+
+// Use the default 'Sheet1' sheet
 const adapter = new GoogleSheetAdapter(WEB_APP_URL, defaultData);
+
+// Or, specify a custom sheet name
+// const adapter = new GoogleSheetAdapter(WEB_APP_URL, defaultData, 'my_lowdb_sheet');
+
 const db = new Low(adapter, defaultData);
 
 // 2. READ THE DATABASE ON STARTUP
@@ -160,15 +168,22 @@ app.listen(port, () => {
 
 ## 🚨 Important Notes & Troubleshooting
 
+  * **Feature: Automatic Sheet Creation**
+      * The `lowdb_adapter.gs` script will automatically create a sheet (tab) if the custom sheet name you specified doesn't exist. If you don't specify a sheet name, the default is `Sheet1`.
+
   * **Error: `TypeError: Cannot read properties of undefined (reading 'push')`**
 
       * This is the most common error. It means your `db.data` object is `{}` because the sheet was empty, so `db.data.messages` is `undefined`.
       * **Fix:** Always add the "safety check" lines after your initial `await db.read()` to ensure your default data structure is in place (see Step 3 in the example).
 
+  * **Error: `Failed to read from Google Sheet: Forbidden`**
+      * This usually means the Apps Script deployment isn't active yet.
+      * **Fix:** Wait a few moments and try again, or re-deploy the script. Make sure you've set **Who has access: Anyone** in the deployment settings.
+
   * **My Code Isn't Saving / I Get an Error\!**
 
       * If you make **any** changes to the `lowdb_adapter.gs` file, you **must re-deploy it**.
-      * **How to Re-deploy:** Click **Deploy** \> **Manage deployments** \> Click the **Edit (pencil ✏️) icon** \> Change **Version** to **New version** \> Click **Deploy**. You do not get a new URL.
+      * **How to Re-deploy:** Click **Deploy** > **Manage deployments** > Click the **Edit (pencil ✏️) icon** > Change **Version** to **New version** > Click **Deploy**. You do not get a new URL. This is critical after updating the script with the new features.
 
   * **Is This Secure?**
 

@@ -6,10 +6,12 @@ export default class GoogleSheetAdapter {
   /**
    * @param {string} webAppUrl The deployed Google Apps Script URL.
    * @param {object} defaultData The default data to return if the db is empty.
+   * @param {string} sheetName The name of the sheet (tab) to use for storage.
    */
-  constructor(webAppUrl, defaultData = {}) {
+  constructor(webAppUrl, defaultData = {}, sheetName = 'Sheet1') {
     this.url = webAppUrl;
     this.defaultData = defaultData;
+    this.sheetName = sheetName;
   }
 
   /**
@@ -18,7 +20,10 @@ export default class GoogleSheetAdapter {
    */
   async read() {
     try {
-      const res = await fetch(this.url);
+      const readUrl = new URL(this.url);
+      readUrl.searchParams.set('sheetName', this.sheetName);
+
+      const res = await fetch(readUrl.toString());
       if (!res.ok) {
         throw new Error(`Failed to read from Google Sheet: ${res.statusText}`);
       }
@@ -39,7 +44,10 @@ export default class GoogleSheetAdapter {
    */
   async write(data) {
     try {
-      const res = await fetch(this.url, {
+      const writeUrl = new URL(this.url);
+      writeUrl.searchParams.set('sheetName', this.sheetName);
+
+      const res = await fetch(writeUrl.toString(), {
         method: 'POST',
         headers: {
           'Content-Type': 'text/plain',
