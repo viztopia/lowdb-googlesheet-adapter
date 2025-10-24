@@ -35,7 +35,7 @@ This part creates the secure web API that your adapter will talk to.
 
 1.  **Create the Sheet:**
 
-      * Go to [sheets.new](https://sheets.new) to create a new Google Sheet.
+      * Go to [sheets.new](https://sheets.new) to create a new Google Sheet. (You may want to use a dummy Google account instead of your main account for security).
       * At the bottom, rename the default "Sheet1" tab to **`lowdb_storage`**. (If you want to use a different name, you must change the `SHEET_NAME` variable in the `lowdb_adapter.gs` script).
 
 2.  **Create the Apps Script:**
